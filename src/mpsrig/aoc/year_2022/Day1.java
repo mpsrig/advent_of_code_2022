@@ -3,8 +3,6 @@ package mpsrig.aoc.year_2022;
 import mpsrig.aoc.framework.ComputationWithGroups;
 import mpsrig.aoc.framework.Runner;
 
-import java.util.Arrays;
-
 public class Day1 extends ComputationWithGroups {
     public static void main(String[] args) {
         Runner.run(null, new Day1());
