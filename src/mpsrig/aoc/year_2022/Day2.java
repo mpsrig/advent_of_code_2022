@@ -129,5 +129,6 @@ public class Day2 extends Runner.Computation {
 
     @Override
     public Object computePart2() {
-        return ListUtils.map(input, Problem::new).stream().mapToInt(Problem::getScore).sum();}
+        return ListUtils.map(input, Problem::new).stream().mapToInt(Problem::getScore).sum();
+    }
 }
