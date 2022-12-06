@@ -13,15 +13,15 @@ public class Day5 extends Runner.Computation {
     }
 
     int emptyLine = 0;
-    List<Integer> ids;
+    List<String> ids;
     List<Instruction> instructions;
 
     static class Instruction {
-        static Pattern PATTERN = Pattern.compile("move (\\d+) from (\\d+) to (\\d+)");
+        static Pattern PATTERN = Pattern.compile("move (\\d+) from (.*) to (.*)");
 
         final int quantity;
-        final int source;
-        final int destination;
+        final String source;
+        final String destination;
 
         Instruction(String line) {
             var m = PATTERN.matcher(line);
@@ -29,30 +29,32 @@ public class Day5 extends Runner.Computation {
                 throw new IllegalStateException();
             }
             quantity = Integer.parseInt(m.group(1));
-            source = Integer.parseInt(m.group(2));
-            destination = Integer.parseInt(m.group(3));
+            source = m.group(2);
+            destination = m.group(3);
         }
     }
 
     @Override
     public void init() {
         emptyLine = input.indexOf("");
-        ids = InputUtils.parseInts(Arrays.asList(input.get(emptyLine-1).trim().split("\s+")));
+        ids = Arrays.asList(input.get(emptyLine-1).trim().split("\s+"));
         instructions = ListUtils.map(input.subList(emptyLine + 1, input.size()), Instruction::new);
     }
 
-    private Map<Integer, ArrayDeque<Character>> buildStacks() {
-        Map<Integer, ArrayDeque<Character>> stacks = new HashMap<>();
+    private Map<String, ArrayDeque<Character>> buildStacks() {
+        Map<String, ArrayDeque<Character>> stacks = new HashMap<>();
+        int j = 0;
         for (var id : ids) {
             var stack = new ArrayDeque<Character>();
             for (int i = emptyLine - 2; i > -1; i--) {
                 var line = input.get(i);
-                char item = line.charAt((id - 1) * 4 + 1);
+                char item = line.charAt(j * 4 + 1);
                 if (item != ' '){
                     stack.push(item);
                 }
             }
             stacks.put(id, stack);
+            j++;
         }
 
         var serialized = serializeStacks(stacks);
@@ -64,7 +66,7 @@ public class Day5 extends Runner.Computation {
         return stacks;
     }
 
-    private List<String> serializeStacks(Map<Integer, ArrayDeque<Character>> stacks) {
+    private List<String> serializeStacks(Map<String, ArrayDeque<Character>> stacks) {
         int height = stacks.values().stream().mapToInt(Collection::size).max().orElseThrow();
 
         List<List<Character>> temp = new ArrayList<>(ids.size());
@@ -95,7 +97,7 @@ public class Day5 extends Runner.Computation {
         return Arrays.asList(outputLines);
     }
 
-    private void printStacks(Map<Integer, ArrayDeque<Character>> stacks) {
+    private void printStacks(Map<String, ArrayDeque<Character>> stacks) {
         for (var line : serializeStacks(stacks)) {
             System.err.println(line);
         }
@@ -121,14 +123,14 @@ public class Day5 extends Runner.Computation {
         return sb.toString();
     }
 
-    void processInstructionPart1(Map<Integer, ArrayDeque<Character>> stacks, Instruction instruction) {
+    void processInstructionPart1(Map<String, ArrayDeque<Character>> stacks, Instruction instruction) {
         for (int i = 0; i < instruction.quantity; i++) {
             var elem = stacks.get(instruction.source).pop();
             stacks.get(instruction.destination).push(elem);
         }
     }
 
-    void processInstructionPart2(Map<Integer, ArrayDeque<Character>> stacks, Instruction instruction) {
+    void processInstructionPart2(Map<String, ArrayDeque<Character>> stacks, Instruction instruction) {
         var buffer = new ArrayDeque<Character>(instruction.quantity);
         for (int i = 0; i < instruction.quantity; i++) {
             buffer.push(stacks.get(instruction.source).pop());
