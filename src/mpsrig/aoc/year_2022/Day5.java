@@ -13,6 +13,7 @@ public class Day5 extends Runner.Computation {
     }
 
     int emptyLine = 0;
+    List<Integer> ids;
     List<Instruction> instructions;
 
     static class Instruction {
@@ -35,21 +36,13 @@ public class Day5 extends Runner.Computation {
 
     @Override
     public void init() {
-        int i = 0;
-        for (var line : input) {
-            if (line.isEmpty()) {
-                break;
-            }
-            i++;
-        }
-        emptyLine = i;
-
+        emptyLine = input.indexOf("");
+        ids = InputUtils.parseInts(Arrays.asList(input.get(emptyLine-1).trim().split("\s+")));
         instructions = ListUtils.map(input.subList(emptyLine + 1, input.size()), Instruction::new);
     }
 
     private Map<Integer, ArrayDeque<Character>> buildStacks() {
         Map<Integer, ArrayDeque<Character>> stacks = new HashMap<>();
-        var ids = InputUtils.parseInts(Arrays.asList(input.get(emptyLine-1).trim().split("\s+")));
         for (var id : ids) {
             var stack = new ArrayDeque<Character>();
             for (int i = emptyLine - 2; i > -1; i--) {
@@ -61,25 +54,27 @@ public class Day5 extends Runner.Computation {
             }
             stacks.put(id, stack);
         }
+
+        var serialized = serializeStacks(stacks);
+        var selection = input.subList(0, emptyLine);
+        if (!serialized.equals(selection)) {
+            throw new IllegalStateException("Serialized stack does not match original input");
+        }
+
         return stacks;
     }
 
-    private static int maxKey(Map<Integer, ArrayDeque<Character>> stacks) {
-        return stacks.keySet().stream().mapToInt(x -> x).max().orElseThrow();
-    }
-
-    private static void printStacks(Map<Integer, ArrayDeque<Character>> stacks) {
-        int mk = maxKey(stacks);
+    private List<String> serializeStacks(Map<Integer, ArrayDeque<Character>> stacks) {
         int height = stacks.values().stream().mapToInt(Collection::size).max().orElseThrow();
 
-        List<List<Character>> temp = new ArrayList<>(mk);
-        for (int i = 1; i <= mk; i++) {
-            temp.add(new ArrayList<>(stacks.get(i)));
+        List<List<Character>> temp = new ArrayList<>(ids.size());
+        for (var id : ids) {
+            temp.add(new ArrayList<>(stacks.get(id)));
         }
 
-        List<String> outputLines = new ArrayList<>(height);
+        String[] outputLines = new String[height + 1];
         for (int i = 0; i < height; i++) {
-            List<String> line = new ArrayList<>(mk);
+            List<String> line = new ArrayList<>(ids.size());
             for (var stack : temp) {
                 var elemIdx = stack.size() - 1 - i;
                 if (elemIdx < 0) {
@@ -88,21 +83,22 @@ public class Day5 extends Runner.Computation {
                     line.add("[" + stack.get(elemIdx) + "]");
                 }
             }
-            outputLines.add(String.join(" ", line));
+            outputLines[height - 1 - i] = String.join(" ", line);
         }
 
-        var sb = new StringBuilder();
-        for (int i = outputLines.size() -1; i > -1; i--) {
-            sb.append(outputLines.get(i));
-            sb.append("\n");
+        var sj = new StringJoiner("   ", " ", " ");
+        for (var id : ids) {
+            sj.add(String.valueOf(id));
         }
-        sb.append(" ");
-        for (int i = 1; i <= mk; i++) {
-            sb.append(i);
-            sb.append("   ");
-        }
+        outputLines[outputLines.length - 1] = sj.toString();
 
-        System.err.println(sb);
+        return Arrays.asList(outputLines);
+    }
+
+    private void printStacks(Map<Integer, ArrayDeque<Character>> stacks) {
+        for (var line : serializeStacks(stacks)) {
+            System.err.println(line);
+        }
     }
 
     private String impl(boolean isPart2) {
@@ -118,10 +114,9 @@ public class Day5 extends Runner.Computation {
 
 //        printStacks(stacks);
 
-        int mk = maxKey(stacks);
         var sb = new StringBuilder();
-        for (int i = 1; i <= mk; i++) {
-            sb.append(stacks.get(i).peek());
+        for (var id : ids) {
+            sb.append(stacks.get(id).peek());
         }
         return sb.toString();
     }
