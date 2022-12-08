@@ -13,7 +13,7 @@ public class Day8 extends Runner.Computation {
     protected void init() {
         grid = new int[input.size()][];
         for (int y = 0; y < grid.length; y++) {
-            grid[y] = input.get(y).codePoints().map(elem -> Integer.parseInt(Character.toString(elem))).toArray();
+            grid[y] = input.get(y).codePoints().map(Character::getNumericValue).toArray();
         }
     }
 
