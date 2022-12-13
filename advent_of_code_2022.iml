@@ -35,5 +35,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" scope="RUNTIME" name="fasterxml.jackson.core.databind" level="project" />
   </component>
 </module>
